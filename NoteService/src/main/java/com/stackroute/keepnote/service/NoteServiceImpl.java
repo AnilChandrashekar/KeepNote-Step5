@@ -1,9 +1,16 @@
 package com.stackroute.keepnote.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
 
 import com.stackroute.keepnote.exception.NoteNotFoundExeption;
 import com.stackroute.keepnote.model.Note;
+import com.stackroute.keepnote.model.NoteUser;
+import com.stackroute.keepnote.repository.NoteRepository;
 
 /*
 * Service classes are used here to implement additional business logic/validation 
@@ -14,7 +21,7 @@ import com.stackroute.keepnote.model.Note;
 * better. Additionally, tool support and additional behavior might rely on it in the 
 * future.
 * */
-
+@Service
 public class NoteServiceImpl implements NoteService{
 
 	/*
@@ -23,12 +30,30 @@ public class NoteServiceImpl implements NoteService{
 	 * object using the new keyword.
 	 */
 	
+	NoteRepository noteRepository;
+	
+	public NoteServiceImpl(NoteRepository noteRepository)
+	{
+		this.noteRepository  = noteRepository;
+	}
+	
 	/*
 	 * This method should be used to save a new note.
 	 */
 	public boolean createNote(Note note) {
 		
-		return false;
+		List<Note> noteList = new ArrayList<>();
+		noteList.add(note);
+		NoteUser noteuser = new NoteUser();
+		noteuser.setUserId(note.getNoteCreatedBy());
+		noteuser.setNotes(noteList);
+		NoteUser noteUser =  noteRepository.insert(noteuser);
+		
+		if(noteUser!=null)
+		{
+			return true;
+		}
+			return false;
 	}
 	
 	/* This method should be used to delete an existing note. */
@@ -36,6 +61,12 @@ public class NoteServiceImpl implements NoteService{
 	
 	public boolean deleteNote(String userId, int noteId) {
 		
+		Optional<NoteUser> noteUser = noteRepository.findById(userId);
+		if(noteUser.get()!=null)
+		{
+			noteRepository.delete(noteUser.get());
+			return true;
+		}
 		return false;
 	}
 	
@@ -44,6 +75,23 @@ public class NoteServiceImpl implements NoteService{
 	
 	public boolean deleteAllNotes(String userId) {
 		
+		Optional<NoteUser> noteUserOptional = noteRepository.findById(userId);
+		NoteUser noteUser = noteUserOptional.get();
+		
+		if(noteUser.getNotes()!=null)
+		{
+			List<Note> filteredNotes = new ArrayList<>();
+			List<Note>   notes = noteUser.getNotes();
+			notes.forEach(note-> {
+				if(!note.getNoteCreatedBy().equals(userId))
+				{
+					filteredNotes.add(note);
+				}
+			});
+			noteUser.setNotes(filteredNotes);
+			noteRepository.save(noteUser);
+			return true;
+		}
 		return false;
 	}
 
@@ -52,15 +100,55 @@ public class NoteServiceImpl implements NoteService{
 	 */
 	public Note updateNote(Note note, int id, String userId) throws NoteNotFoundExeption {
 		
-		return null;
+		try
+		{
+		Optional<NoteUser> noteUserOptional = noteRepository.findById(userId);
+		NoteUser noteUser = noteUserOptional.get();
+		if (noteUser.getNotes() != null) {
+			List<Note> notes = noteUser.getNotes();
+			List<Note> updateNotesList = new ArrayList<>();
+			for (Note noteIter : notes) {
+				if (noteIter.getNoteId() == id) {
+					updateNotesList.add(note);
+				} else {
+					updateNotesList.add(noteIter);
+				}
+			}
+			noteUser.setNotes(updateNotesList);
+			noteRepository.save(noteUser);
+		}
+		}
+		catch(NoSuchElementException exception)
+		{
+			throw new NoteNotFoundExeption("NoteNotFoundExeption");
+		}
+		return note;
 	}
 
 	/*
 	 * This method should be used to get a note by noteId created by specific user
 	 */
 	public Note getNoteByNoteId(String userId, int noteId) throws NoteNotFoundExeption {
-		
-		return null;
+		Note noteReturn = null;
+		try
+		{
+		Optional<NoteUser> noteUserOptional = noteRepository.findById(userId);
+		NoteUser noteUser = noteUserOptional.get();
+		if (noteUser.getNotes() != null) {
+			List<Note> notes = noteUser.getNotes();
+
+			for (Note note : notes) {
+				if (note.getNoteId() == noteId) {
+					noteReturn = note;
+				}
+			}
+		}
+		}
+		catch(NoSuchElementException exception)
+		{
+			throw new NoteNotFoundExeption("NoteNotFoundExeption");
+		}
+		return noteReturn;
 	}
 
 	/*
@@ -68,7 +156,8 @@ public class NoteServiceImpl implements NoteService{
 	 */
 	public List<Note> getAllNoteByUserId(String userId) {
 		
-		return null;
+		NoteUser noteUser = noteRepository.findById(userId).get();
+		return noteUser.getNotes();
 	}
 
 }
