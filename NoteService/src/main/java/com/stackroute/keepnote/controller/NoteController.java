@@ -60,11 +60,10 @@ public class NoteController {
 	public ResponseEntity<?> createNote(@RequestBody Note note, HttpServletRequest request) {
 		log.info("createNote : STARTED");
 		HttpHeaders headers = new HttpHeaders();
-		String loggedInUser = (String) request.getSession().getAttribute("loggedInUserId");
 		try {
-			note.setNoteCreatedBy(loggedInUser);
 			note.setNoteCreationDate(new Date());
 			if (noteService.createNote(note)) {
+				log.info("Note created successfully.....");
 				return new ResponseEntity<>(headers, HttpStatus.CREATED);
 			}
 		} catch (Exception e) {

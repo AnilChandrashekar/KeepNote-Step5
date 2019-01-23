@@ -66,13 +66,7 @@ public class CategoryController {
 	public ResponseEntity<?> createCategory(@RequestBody Category category,HttpServletRequest request) {
 		log.info("createCategory : STARTED");
 		HttpHeaders headers = new HttpHeaders();
-		String loggedInUser =(String) request.getSession().getAttribute("loggedInUserId");
-		/*if(loggedInUser== null)
-		{
-			return new ResponseEntity<>(headers, HttpStatus.UNAUTHORIZED);
-		}*/
 		try {
-			category.setCategoryCreatedBy(loggedInUser);
 			category.setCategoryCreationDate(new Date());
 			if(categoryService.createCategory(category)!=null)
 			{

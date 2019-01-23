@@ -23,12 +23,13 @@ public class Category {
 	 * date. 
 	 */
 
+	@Id
+    String id;
     Date categoryCreationDate;
     String categoryCreatedBy;
     String categoryDescription;
     String categoryName;
-    @Id
-    String id;
+    
     
 	public Date getCategoryCreationDate() {
 		return categoryCreationDate;

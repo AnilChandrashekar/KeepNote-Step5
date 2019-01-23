@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
 
 import com.stackroute.keepnote.exception.NoteNotFoundExeption;
@@ -30,6 +32,8 @@ public class NoteServiceImpl implements NoteService{
 	 * object using the new keyword.
 	 */
 	
+	private Log log = LogFactory.getLog(getClass());
+	
 	NoteRepository noteRepository;
 	
 	public NoteServiceImpl(NoteRepository noteRepository)
@@ -47,8 +51,10 @@ public class NoteServiceImpl implements NoteService{
 		NoteUser noteuser = new NoteUser();
 		noteuser.setUserId(note.getNoteCreatedBy());
 		noteuser.setNotes(noteList);
+		log.info("note.getNoteCreatedBy():: "+note.getNoteCreatedBy());
+		log.info("noteList:: "+noteList);
 		NoteUser noteUser =  noteRepository.insert(noteuser);
-		
+		log.info("noteUser:: "+noteUser);
 		if(noteUser!=null)
 		{
 			return true;

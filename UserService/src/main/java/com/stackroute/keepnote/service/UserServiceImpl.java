@@ -1,5 +1,7 @@
 package com.stackroute.keepnote.service;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
 
 import com.stackroute.keepnote.exceptions.UserAlreadyExistsException;
@@ -24,6 +26,7 @@ public class UserServiceImpl implements UserService {
 	 * Constructor-based autowiring) Please note that we should not create any
 	 * object using the new keyword.
 	 */
+	private Log log = LogFactory.getLog(getClass());
 	
 	private UserRepository userRepository;
 	
@@ -43,6 +46,11 @@ public class UserServiceImpl implements UserService {
 		
 		if(userCreated!=null)
 		{
+			log.debug("userId: "+userCreated.getUserId());
+			log.debug("userName: "+userCreated.getUserName());
+			log.debug("pwd: "+userCreated.getUserPassword());
+			log.debug("mobile: "+userCreated.getUserMobile());
+			log.debug("added Date: "+userCreated.getUserAddedDate());
 			return userCreated;
 		}
 		throw new UserAlreadyExistsException("UserAlreadyExistsException");
